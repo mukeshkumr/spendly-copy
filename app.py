@@ -1,6 +1,18 @@
+import os
+
 from flask import Flask, render_template
 
+from database.db import init_app, init_db, seed_db
+
 app = Flask(__name__)
+app.config["DATABASE"] = os.path.join(app.root_path, "spendly.db")
+
+# Initialize database
+init_app(app)
+
+with app.app_context():
+    init_db()
+    seed_db()
 
 
 # ------------------------------------------------------------------ #
