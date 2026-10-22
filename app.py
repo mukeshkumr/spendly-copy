@@ -1,11 +1,12 @@
 import os
 
-from flask import Flask, render_template
+from flask import Flask, flash, redirect, render_template, request, url_for
 
-from database.db import init_app, init_db, seed_db
+from database.db import create_user, init_app, init_db, seed_db
 
 app = Flask(__name__)
 app.config["DATABASE"] = os.path.join(app.root_path, "spendly.db")
+app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")
 
 # Initialize database
 init_app(app)
@@ -34,8 +35,39 @@ def privacy():
     return render_template("privacy.html")
 
 
-@app.route("/register")
+@app.route("/register", methods=["GET", "POST"])
 def register():
+    """Handle user registration.
+
+    GET: Render registration form
+    POST: Process form submission, create user account
+    """
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+        confirm_password = request.form.get("confirm_password", "")
+
+        if not all([name, email, password, confirm_password]):
+            flash("All fields are required.", "error")
+            return render_template("register.html"), 400
+
+        if password != confirm_password:
+            flash("Passwords do not match.", "error")
+            return render_template("register.html"), 400
+
+        if len(password) < 8:
+            flash("Password must be at least 8 characters.", "error")
+            return render_template("register.html"), 400
+
+        user_id = create_user(name, email, password)
+        if user_id is None:
+            flash("Email already registered.", "error")
+            return render_template("register.html"), 400
+
+        flash("Account created. Please sign in.", "success")
+        return redirect(url_for("login"))
+
     return render_template("register.html")
 
 

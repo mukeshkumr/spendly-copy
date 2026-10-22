@@ -138,3 +138,23 @@ def init_app(app):
     teardown handlers and initialize the database.
     """
     app.teardown_appcontext(close_db)
+
+
+def create_user(name: str, email: str, password: str) -> int | None:
+    """Hash password and insert a new user row.
+
+    Returns the new user's id, or None if the email is already taken.
+    """
+    db = get_db()
+    existing = db.execute(
+        "SELECT id FROM users WHERE email = ?", (email,)
+    ).fetchone()
+    if existing:
+        return None
+    password_hash = generate_password_hash(password)
+    cursor = db.execute(
+        "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
+        (name, email, password_hash),
+    )
+    db.commit()
+    return cursor.lastrowid
