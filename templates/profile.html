@@ -18,7 +18,7 @@
     </header>
 
     <section class="profile-user-card" aria-labelledby="profile-user-name">
-        <div class="profile-avatar" aria-hidden="true">{{ profile_user.initials }}</div>
+        <div class="profile-avatar" aria-hidden="true">{{ profile_user.initials|default(profile_user.name.split()|map('first')|join|upper, true) }}</div>
         <div class="profile-user-details">
             <p class="profile-eyebrow">Account holder</p>
             <h2 id="profile-user-name">{{ profile_user.name }}</h2>
@@ -30,7 +30,7 @@
         </p>
     </section>
 
-    <section class="profile-stats" aria-label="Monthly spending summary">
+    <section class="profile-stats" aria-label="Spending summary">
         {% for stat in summary_stats %}
         <article class="profile-stat-card">
             <p class="profile-stat-label">{{ stat.label }}</p>
@@ -70,7 +70,7 @@
                                     {{ transaction.category }}
                                 </span>
                             </td>
-                            <td class="transaction-amount">{{ transaction.amount }}</td>
+                            <td class="transaction-amount">₹{{ "{:,.2f}".format(transaction.amount) }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -81,7 +81,7 @@
         <section class="profile-panel categories-panel" aria-labelledby="categories-heading">
             <div class="profile-panel-heading">
                 <div>
-                    <p class="profile-eyebrow">October 2026</p>
+                    <p class="profile-eyebrow">All time</p>
                     <h2 id="categories-heading">Spending by category</h2>
                 </div>
             </div>

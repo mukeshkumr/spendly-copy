@@ -62,36 +62,65 @@ def test_successful_login_redirects_to_profile(client, monkeypatch):
     assert response.headers["Location"].endswith("/profile")
 
 
-def test_profile_renders_hardcoded_content_without_database_access(client):
+def test_profile_renders_live_content_and_empty_expenses(client, monkeypatch):
+    app_module = importlib.import_module("app")
+    monkeypatch.setattr(
+        app_module,
+        "get_user_by_id",
+        lambda _user_id: {
+            "name": "Demo User",
+            "email": "demo@spendly.com",
+            "member_since": "January 2026",
+        },
+    )
+    monkeypatch.setattr(
+        app_module,
+        "get_summary_stats",
+        lambda _user_id: {
+            "total_spent": 0,
+            "transaction_count": 0,
+            "top_category": "—",
+        },
+    )
+    monkeypatch.setattr(app_module, "get_recent_transactions", lambda _user_id: [])
+    monkeypatch.setattr(app_module, "get_category_breakdown", lambda _user_id: [])
+
     with client.session_transaction() as user_session:
         user_session["user_id"] = 101
 
-    with patch(
-        "database.db.get_db",
-        side_effect=AssertionError("Profile page must not access the database"),
-    ):
-        response = client.get("/profile")
+    response = client.get("/profile")
 
     assert response.status_code == 200
     html = response.get_data(as_text=True)
-    assert "Aarav Sharma" in html
-    assert "aarav.sharma@example.com" in html
-    assert "₹19,420" in html
+    assert "Demo User" in html
+    assert "demo@spendly.com" in html
+    assert "₹0.00" in html
     assert html.count('class="profile-stat-card"') == 3
-    assert html.count('class="transaction-description"') == 5
-    assert html.count('class="category-list-item"') == 6
+    assert "0 items" in html
+    assert 'class="category-list-item"' not in html
     assert "Spending by category" in html
     assert "password_hash" not in html
 
 
-def test_navigation_shows_authenticated_or_guest_links(client):
+def test_navigation_shows_authenticated_or_guest_links(client, monkeypatch):
+    app_module = importlib.import_module("app")
+    monkeypatch.setattr(
+        app_module,
+        "get_user_by_id",
+        lambda _user_id: {
+            "name": "Demo User",
+            "email": "demo@spendly.com",
+            "member_since": "January 2026",
+        },
+    )
+
     with client.session_transaction() as user_session:
         user_session["user_id"] = 101
     authenticated_response = client.get("/")
     authenticated_html = authenticated_response.get_data(as_text=True)
 
     assert authenticated_response.status_code == 200
-    assert "Aarav Sharma" in authenticated_html
+    assert "Demo User" in authenticated_html
     assert "Sign out" in authenticated_html
     assert "Get started" not in authenticated_html
 

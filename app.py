@@ -1,20 +1,28 @@
 import os
 
-from flask import Flask, flash, redirect, render_template, request, session, url_for
+from flask import (
+    Flask,
+    abort,
+    flash,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
 from werkzeug.security import check_password_hash
 
 from database.db import create_user, get_user_by_email, init_app, init_db, seed_db
+from database.queries import (
+    get_category_breakdown,
+    get_recent_transactions,
+    get_summary_stats,
+    get_user_by_id,
+)
 
 app = Flask(__name__)
 app.config["DATABASE"] = os.path.join(app.root_path, "spendly.db")
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")
-
-PROFILE_USER = {
-    "name": "Aarav Sharma",
-    "email": "aarav.sharma@example.com",
-    "initials": "AS",
-    "member_since": "October 2025",
-}
 
 # Initialize database
 init_app(app)
@@ -28,7 +36,8 @@ with app.app_context():
 def inject_navigation_user():
     """Provide a display name for the authenticated navigation."""
     if session.get("user_id"):
-        return {"nav_username": PROFILE_USER["name"]}
+        user = get_user_by_id(session["user_id"])
+        return {"nav_username": user["name"] if user else None}
     return {"nav_username": None}
 
 
@@ -121,66 +130,52 @@ def profile():
     if not session.get("user_id"):
         return redirect(url_for("login"))
 
+    user_id = session["user_id"]
+    profile_user = get_user_by_id(user_id)
+    if profile_user is None:
+        abort(404)
+    profile_user["initials"] = "".join(
+        part[0] for part in profile_user["name"].split()[:2]
+    ).upper()
+
+    stats = get_summary_stats(session["user_id"])
     summary_stats = [
-        {"label": "Spent this month", "value": "₹19,420", "detail": "October 2026"},
-        {"label": "Transactions", "value": "42", "detail": "This month"},
-        {"label": "Top category", "value": "Food", "detail": "₹8,450 this month"},
+        {
+            "label": "Total spent",
+            "value": f"₹{stats['total_spent']:,.2f}",
+            "detail": "All time",
+        },
+        {
+            "label": "Transactions",
+            "value": str(stats["transaction_count"]),
+            "detail": "All time",
+        },
+        {
+            "label": "Top category",
+            "value": stats["top_category"],
+            "detail": "Highest spending category",
+        },
     ]
 
-    transactions = [
-        {
-            "date": "Oct 22, 2026",
-            "description": "Weekly groceries",
-            "category": "Food",
-            "amount": "₹1,240",
-        },
-        {
-            "date": "Oct 21, 2026",
-            "description": "Electricity bill",
-            "category": "Bills",
-            "amount": "₹2,180",
-        },
-        {
-            "date": "Oct 20, 2026",
-            "description": "Metro card recharge",
-            "category": "Transport",
-            "amount": "₹500",
-        },
-        {
-            "date": "Oct 18, 2026",
-            "description": "Dinner with friends",
-            "category": "Food",
-            "amount": "₹860",
-        },
-        {
-            "date": "Oct 16, 2026",
-            "description": "Pharmacy",
-            "category": "Health",
-            "amount": "₹640",
-        },
-    ]
+    transactions = get_recent_transactions(user_id)
 
     categories = [
-        {"name": "Food", "amount": "₹8,450", "value": 8450, "class": "food"},
-        {"name": "Bills", "amount": "₹4,220", "value": 4220, "class": "bills"},
-        {"name": "Shopping", "amount": "₹3,460", "value": 3460, "class": "shopping"},
-        {"name": "Transport", "amount": "₹1,240", "value": 1240, "class": "transport"},
-        {"name": "Health", "amount": "₹1,100", "value": 1100, "class": "health"},
         {
-            "name": "Entertainment",
-            "amount": "₹950",
-            "value": 950,
-            "class": "entertainment",
-        },
+            "name": category["name"],
+            "amount": f"₹{category['amount']:,.2f}",
+            "value": int(category["pct"]),
+            "class": category["name"].lower(),
+        }
+        for category in get_category_breakdown(user_id)
     ]
 
     return render_template(
         "profile.html",
-        profile_user=PROFILE_USER,
+        profile_user=profile_user,
         summary_stats=summary_stats,
         transactions=transactions,
         categories=categories,
-        category_max=8450,
+        category_max=100,
     )
 
 
