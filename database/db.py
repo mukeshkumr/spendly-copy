@@ -158,3 +158,11 @@ def create_user(name: str, email: str, password: str) -> int | None:
     )
     db.commit()
     return cursor.lastrowid
+
+
+def get_user_by_email(email: str) -> sqlite3.Row | None:
+    """Return the user row for the given email, or None."""
+    db = get_db()
+    return db.execute(
+        "SELECT * FROM users WHERE email = ?", (email,)
+    ).fetchone()
