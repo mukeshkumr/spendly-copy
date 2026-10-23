@@ -9,12 +9,27 @@ app = Flask(__name__)
 app.config["DATABASE"] = os.path.join(app.root_path, "spendly.db")
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")
 
+PROFILE_USER = {
+    "name": "Aarav Sharma",
+    "email": "aarav.sharma@example.com",
+    "initials": "AS",
+    "member_since": "October 2025",
+}
+
 # Initialize database
 init_app(app)
 
 with app.app_context():
     init_db()
     seed_db()
+
+
+@app.context_processor
+def inject_navigation_user():
+    """Provide a display name for the authenticated navigation."""
+    if session.get("user_id"):
+        return {"nav_username": PROFILE_USER["name"]}
+    return {"nav_username": None}
 
 
 # ------------------------------------------------------------------ #
@@ -103,7 +118,70 @@ def logout():
 
 @app.route("/profile")
 def profile():
-    return "Profile page — coming in Step 4"
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+
+    summary_stats = [
+        {"label": "Spent this month", "value": "₹19,420", "detail": "October 2026"},
+        {"label": "Transactions", "value": "42", "detail": "This month"},
+        {"label": "Top category", "value": "Food", "detail": "₹8,450 this month"},
+    ]
+
+    transactions = [
+        {
+            "date": "Oct 22, 2026",
+            "description": "Weekly groceries",
+            "category": "Food",
+            "amount": "₹1,240",
+        },
+        {
+            "date": "Oct 21, 2026",
+            "description": "Electricity bill",
+            "category": "Bills",
+            "amount": "₹2,180",
+        },
+        {
+            "date": "Oct 20, 2026",
+            "description": "Metro card recharge",
+            "category": "Transport",
+            "amount": "₹500",
+        },
+        {
+            "date": "Oct 18, 2026",
+            "description": "Dinner with friends",
+            "category": "Food",
+            "amount": "₹860",
+        },
+        {
+            "date": "Oct 16, 2026",
+            "description": "Pharmacy",
+            "category": "Health",
+            "amount": "₹640",
+        },
+    ]
+
+    categories = [
+        {"name": "Food", "amount": "₹8,450", "value": 8450, "class": "food"},
+        {"name": "Bills", "amount": "₹4,220", "value": 4220, "class": "bills"},
+        {"name": "Shopping", "amount": "₹3,460", "value": 3460, "class": "shopping"},
+        {"name": "Transport", "amount": "₹1,240", "value": 1240, "class": "transport"},
+        {"name": "Health", "amount": "₹1,100", "value": 1100, "class": "health"},
+        {
+            "name": "Entertainment",
+            "amount": "₹950",
+            "value": 950,
+            "class": "entertainment",
+        },
+    ]
+
+    return render_template(
+        "profile.html",
+        profile_user=PROFILE_USER,
+        summary_stats=summary_stats,
+        transactions=transactions,
+        categories=categories,
+        category_max=8450,
+    )
 
 
 @app.route("/expenses/add")
