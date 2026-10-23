@@ -1,11 +1,13 @@
 import importlib
 import re
+import secrets
 import sqlite3
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 from flask import g
+from werkzeug.security import generate_password_hash
 
 
 @pytest.fixture
@@ -42,10 +44,18 @@ def test_profile_redirects_guests_to_login(client):
     assert response.headers["Location"].endswith("/login")
 
 
-def test_successful_login_redirects_to_profile(client):
+def test_successful_login_redirects_to_profile(client, monkeypatch):
+    password = secrets.token_urlsafe(24)
+    user = {
+        "id": 101,
+        "password_hash": generate_password_hash(password),
+    }
+    app_module = importlib.import_module("app")
+    monkeypatch.setattr(app_module, "get_user_by_email", lambda _email: user)
+
     response = client.post(
         "/login",
-        data={"email": "demo@spendly.com", "password": "demo123"},
+        data={"email": "profile-test@example.com", "password": password},
     )
 
     assert response.status_code == 302
