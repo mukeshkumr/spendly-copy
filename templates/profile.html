@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Your profile — Spendly{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="profile-page">
+    <header class="profile-page-header">
+        <div>
+            <p class="profile-eyebrow">Your account</p>
+            <h1 class="profile-page-title">Profile overview</h1>
+            <p class="profile-page-subtitle">A snapshot of your Spendly account and recent spending.</p>
+        </div>
+        <a class="profile-logout-link" href="{{ url_for('logout') }}">Sign out</a>
+    </header>
+
+    <section class="profile-user-card" aria-labelledby="profile-user-name">
+        <div class="profile-avatar" aria-hidden="true">{{ profile_user.initials }}</div>
+        <div class="profile-user-details">
+            <p class="profile-eyebrow">Account holder</p>
+            <h2 id="profile-user-name">{{ profile_user.name }}</h2>
+            <p class="profile-user-email">{{ profile_user.email }}</p>
+        </div>
+        <p class="profile-member-since">
+            <span>Member since</span>
+            <strong>{{ profile_user.member_since }}</strong>
+        </p>
+    </section>
+
+    <section class="profile-stats" aria-label="Monthly spending summary">
+        {% for stat in summary_stats %}
+        <article class="profile-stat-card">
+            <p class="profile-stat-label">{{ stat.label }}</p>
+            <p class="profile-stat-value">{{ stat.value }}</p>
+            <p class="profile-stat-detail">{{ stat.detail }}</p>
+        </article>
+        {% endfor %}
+    </section>
+
+    <div class="profile-content-grid">
+        <section class="profile-panel transactions-panel" aria-labelledby="transactions-heading">
+            <div class="profile-panel-heading">
+                <div>
+                    <p class="profile-eyebrow">Latest activity</p>
+                    <h2 id="transactions-heading">Recent transactions</h2>
+                </div>
+                <span class="profile-panel-count">{{ transactions|length }} items</span>
+            </div>
+
+            <div class="transactions-table-wrap">
+                <table class="transactions-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Date</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">Category</th>
+                            <th scope="col" class="amount-column">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in transactions %}
+                        <tr>
+                            <td class="transaction-date">{{ transaction.date }}</td>
+                            <td class="transaction-description">{{ transaction.description }}</td>
+                            <td>
+                                <span class="category-badge category-{{ transaction.category|lower }}">
+                                    {{ transaction.category }}
+                                </span>
+                            </td>
+                            <td class="transaction-amount">{{ transaction.amount }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="profile-panel categories-panel" aria-labelledby="categories-heading">
+            <div class="profile-panel-heading">
+                <div>
+                    <p class="profile-eyebrow">October 2026</p>
+                    <h2 id="categories-heading">Spending by category</h2>
+                </div>
+            </div>
+
+            <ul class="category-list">
+                {% for category in categories %}
+                <li class="category-list-item">
+                    <div class="category-row">
+                        <span class="category-name">{{ category.name }}</span>
+                        <span class="category-total">{{ category.amount }}</span>
+                    </div>
+                    <progress
+                        class="category-progress category-progress-{{ category.class }}"
+                        value="{{ category.value }}"
+                        max="{{ category_max }}"
+                        aria-label="{{ category.name }} spending"
+                    >{{ category.value }}</progress>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+    </div>
+</section>
+{% endblock %}
