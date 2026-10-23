@@ -98,7 +98,7 @@ def login():
             user["password_hash"], password
         ):
             session["user_id"] = user["id"]
-            return redirect(url_for("landing"))
+            return redirect(url_for("profile"))
 
         flash("Invalid email or password.", "error")
         return render_template("login.html"), 401

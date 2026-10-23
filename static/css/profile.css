@@ -156,16 +156,16 @@
     white-space: nowrap;
 }
 
-.transactions-table-wrap { overflow-x: auto; }
+.profile-page .transactions-table-wrap { overflow-x: auto; }
 
-.transactions-table {
+.profile-page .transactions-table {
     width: 100%;
     border-collapse: collapse;
     text-align: left;
     white-space: nowrap;
 }
 
-.transactions-table th {
+.profile-page .transactions-table th {
     padding: 0.65rem 0.55rem;
     border-bottom: 1px solid var(--border);
     color: var(--ink-faint);
@@ -175,21 +175,26 @@
     text-transform: uppercase;
 }
 
-.transactions-table td {
+.profile-page .transactions-table td {
     padding: 0.85rem 0.55rem;
     border-bottom: 1px solid var(--border-soft);
     font-size: 0.8rem;
 }
 
-.transactions-table tbody tr:last-child td { border-bottom: 0; }
+.profile-page .transactions-table tbody tr:last-child td { border-bottom: 0; }
+.profile-page .transactions-table tbody tr:hover { background: var(--paper); }
 
-.transaction-date { color: var(--ink-muted); }
-.transaction-description { color: var(--ink-soft); font-weight: 500; }
-.transactions-table .amount-column,
-.transaction-amount { text-align: right; }
-.transaction-amount { color: var(--ink); font-weight: 600; }
+.profile-page .transaction-date { color: var(--ink-muted); }
+.profile-page .transaction-description { color: var(--ink-soft); font-weight: 500; }
+.profile-page .transactions-table .amount-column,
+.profile-page .transaction-amount { text-align: right; }
+.profile-page .transaction-amount {
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
 
-.category-badge {
+.profile-page .category-badge {
     display: inline-block;
     padding: 0.2rem 0.55rem;
     border-radius: 999px;
@@ -197,32 +202,33 @@
     font-weight: 500;
 }
 
-.category-food,
-.category-progress-food { --category-color: var(--accent); }
-.category-bills,
-.category-progress-bills { --category-color: var(--accent-2); }
-.category-shopping,
-.category-progress-shopping { --category-color: var(--ink-soft); }
-.category-transport,
-.category-progress-transport { --category-color: var(--ink-muted); }
-.category-health,
-.category-progress-health { --category-color: var(--danger); }
-.category-entertainment,
-.category-progress-entertainment { --category-color: var(--accent-2); }
+.profile-page .category-food,
+.profile-page .category-progress-food { --category-color: var(--accent); }
+.profile-page .category-bills,
+.profile-page .category-progress-bills { --category-color: var(--accent-2); }
+.profile-page .category-shopping,
+.profile-page .category-progress-shopping { --category-color: var(--ink-soft); }
+.profile-page .category-transport,
+.profile-page .category-progress-transport { --category-color: var(--ink-muted); }
+.profile-page .category-health,
+.profile-page .category-progress-health { --category-color: var(--danger); }
+.profile-page .category-entertainment,
+.profile-page .category-progress-entertainment { --category-color: var(--accent-2); }
 
-.category-badge {
+.profile-page .category-badge {
+    background: var(--accent-light);
     background: color-mix(in srgb, var(--category-color) 12%, var(--paper-card));
     color: var(--category-color);
 }
 
-.category-list {
+.profile-page .category-list {
     display: flex;
     flex-direction: column;
     gap: 1.15rem;
     list-style: none;
 }
 
-.category-row {
+.profile-page .category-row {
     display: flex;
     justify-content: space-between;
     gap: 1rem;
@@ -230,10 +236,14 @@
     font-size: 0.82rem;
 }
 
-.category-name { color: var(--ink-soft); }
-.category-total { color: var(--ink-muted); font-weight: 500; }
+.profile-page .category-name { color: var(--ink-soft); }
+.profile-page .category-total {
+    color: var(--ink-muted);
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+}
 
-.category-progress {
+.profile-page .category-progress {
     display: block;
     width: 100%;
     height: 0.42rem;
@@ -244,17 +254,17 @@
     background: var(--paper-warm);
 }
 
-.category-progress::-webkit-progress-bar {
+.profile-page .category-progress::-webkit-progress-bar {
     border-radius: 999px;
     background: var(--paper-warm);
 }
 
-.category-progress::-webkit-progress-value {
+.profile-page .category-progress::-webkit-progress-value {
     border-radius: 999px;
     background: var(--category-color);
 }
 
-.category-progress::-moz-progress-bar {
+.profile-page .category-progress::-moz-progress-bar {
     border-radius: 999px;
     background: var(--category-color);
 }
