@@ -76,14 +76,22 @@ def test_profile_renders_live_content_and_empty_expenses(client, monkeypatch):
     monkeypatch.setattr(
         app_module,
         "get_summary_stats",
-        lambda _user_id: {
+        lambda _user_id, *_dates: {
             "total_spent": 0,
             "transaction_count": 0,
             "top_category": "—",
         },
     )
-    monkeypatch.setattr(app_module, "get_recent_transactions", lambda _user_id: [])
-    monkeypatch.setattr(app_module, "get_category_breakdown", lambda _user_id: [])
+    monkeypatch.setattr(
+        app_module,
+        "get_recent_transactions",
+        lambda _user_id, **_date_range: [],
+    )
+    monkeypatch.setattr(
+        app_module,
+        "get_category_breakdown",
+        lambda _user_id, *_dates: [],
+    )
 
     with client.session_transaction() as user_session:
         user_session["user_id"] = 101
@@ -100,6 +108,58 @@ def test_profile_renders_live_content_and_empty_expenses(client, monkeypatch):
     assert 'class="category-list-item"' not in html
     assert "Spending by category" in html
     assert "password_hash" not in html
+
+
+def test_profile_uses_css_safe_category_classes(client, monkeypatch):
+    app_module = importlib.import_module("app")
+    monkeypatch.setattr(
+        app_module,
+        "get_user_by_id",
+        lambda _user_id: {
+            "name": "Demo User",
+            "email": "demo@spendly.com",
+            "member_since": "January 2026",
+        },
+    )
+    monkeypatch.setattr(
+        app_module,
+        "get_summary_stats",
+        lambda _user_id, *_dates: {
+            "total_spent": 25,
+            "transaction_count": 1,
+            "top_category": "Food & Dining",
+        },
+    )
+    monkeypatch.setattr(
+        app_module,
+        "get_recent_transactions",
+        lambda _user_id, **_date_range: [
+            {
+                "date": "2026-01-01",
+                "description": "Lunch",
+                "category": "Food & Dining",
+                "amount": 25,
+            }
+        ],
+    )
+    monkeypatch.setattr(
+        app_module,
+        "get_category_breakdown",
+        lambda _user_id, *_dates: [
+            {"name": "Food & Dining", "amount": 25, "pct": 100}
+        ],
+    )
+
+    with client.session_transaction() as user_session:
+        user_session["user_id"] = 101
+
+    response = client.get("/profile")
+
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert 'class="category-badge category-food-dining"' in html
+    assert "category-progress-food-dining" in html
+    assert "Food &amp; Dining" in html
 
 
 def test_navigation_shows_authenticated_or_guest_links(client, monkeypatch):

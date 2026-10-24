@@ -54,11 +54,95 @@
 
 .profile-user-card,
 .profile-stat-card,
-.profile-panel {
+.profile-panel,
+.profile-date-filter {
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     background: var(--paper-card);
 }
+
+.profile-date-filter {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 1rem 1.25rem;
+}
+
+.profile-date-presets,
+.profile-date-range {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.profile-date-presets { flex-wrap: wrap; }
+
+.profile-date-preset {
+    min-height: 2.35rem;
+    padding: 0.5rem 0.6rem;
+    border: 1px solid var(--border-soft);
+    border-radius: 999px;
+    background: var(--paper);
+    color: var(--ink-soft);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.profile-date-preset:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.profile-date-preset.is-active,
+.profile-date-preset.is-active:hover {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--paper-card);
+}
+
+.profile-date-divider {
+    width: 1px;
+    height: 2rem;
+    margin: 0 0.15rem;
+    background: var(--border);
+}
+
+.profile-date-input {
+    width: 10rem;
+    min-height: 2.35rem;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--paper);
+    color: var(--ink);
+    font: inherit;
+    font-size: 0.82rem;
+}
+
+.profile-date-to {
+    color: var(--ink-muted);
+    font-size: 0.82rem;
+}
+
+.profile-date-submit {
+    min-height: 2.35rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--paper-card);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 500;
+}
+
+.profile-date-submit:hover { background: var(--accent-2); }
 
 .profile-user-card {
     display: flex;
@@ -278,6 +362,11 @@
     .profile-page-header { align-items: flex-start; }
     .profile-page-subtitle { max-width: 34rem; font-size: 0.9rem; }
     .profile-logout-link { padding: 0.5rem 0.7rem; font-size: 0.78rem; }
+    .profile-date-filter { align-items: stretch; padding: 0.85rem; }
+    .profile-date-presets { flex: 1 1 100%; }
+    .profile-date-divider { display: none; }
+    .profile-date-range { flex: 1 1 100%; }
+    .profile-date-input { width: 0; min-width: 0; flex: 1; }
     .profile-user-card { flex-wrap: wrap; padding: 1.15rem; }
     .profile-member-since { width: 100%; margin-left: 5.25rem; text-align: left; }
     .profile-stats { grid-template-columns: 1fr; gap: 0.65rem; }
