@@ -1,0 +1,168 @@
+.expense-form-page {
+    margin: 0 auto;
+    max-width: 680px;
+    padding: 2.5rem 1.25rem 4rem;
+}
+
+.expense-form-header {
+    margin-bottom: 1.75rem;
+}
+
+.expense-form-eyebrow {
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    margin: 0 0 0.5rem;
+    text-transform: uppercase;
+}
+
+.expense-form-header h1 {
+    color: var(--ink);
+    font-size: clamp(2.25rem, 6vw, 3.5rem);
+    font-weight: 400;
+    line-height: 1.05;
+    margin: 0.35rem 0 0.65rem;
+}
+
+.expense-form-header > p:last-child {
+    color: var(--ink-soft);
+    margin: 0;
+}
+
+.expense-form-card {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: clamp(1.25rem, 4vw, 2rem);
+}
+
+.expense-form-field {
+    display: grid;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.expense-form-field label {
+    color: var(--ink);
+    font-size: 0.92rem;
+    font-weight: 600;
+}
+
+.expense-form-field label span {
+    color: var(--ink-soft);
+    font-weight: 400;
+}
+
+.expense-form-field input,
+.expense-form-field select,
+.expense-form-field textarea {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--ink);
+    font: inherit;
+    min-height: 48px;
+    padding: 0.75rem 0.85rem;
+    width: 100%;
+}
+
+.expense-form-field textarea {
+    min-height: 104px;
+    resize: vertical;
+}
+
+.expense-form-field input:focus,
+.expense-form-field select:focus,
+.expense-form-field textarea:focus {
+    border-color: var(--accent);
+    outline: 3px solid var(--accent-light);
+}
+
+.expense-amount-input {
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--accent);
+    display: flex;
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding-left: 0.85rem;
+}
+
+.expense-amount-input input {
+    border: 0;
+    min-width: 0;
+}
+
+.expense-amount-input:focus-within {
+    outline: 3px solid var(--accent-light);
+}
+
+.expense-form-actions {
+    align-items: center;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1.75rem;
+}
+
+.expense-cancel-link {
+    color: var(--ink-soft);
+    font-weight: 500;
+    padding: 0.75rem 0.5rem;
+    text-decoration: none;
+}
+
+.expense-submit-button {
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-sm);
+    color: var(--paper-card);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 600;
+    padding: 0.75rem 1.25rem;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.expense-submit-button:hover {
+    background: var(--ink);
+    border-color: var(--ink);
+}
+
+.expense-submit-button:focus-visible,
+.expense-cancel-link:focus-visible {
+    outline: 3px solid var(--accent-2);
+    outline-offset: 3px;
+}
+
+.expense-form-messages {
+    margin-bottom: 1rem;
+}
+
+.expense-form-message {
+    background: var(--accent-light);
+    border-radius: var(--radius-sm);
+    color: var(--ink);
+    margin: 0;
+    padding: 0.75rem 0.9rem;
+}
+
+.expense-form-message-error {
+    background: var(--accent-light);
+    color: var(--ink);
+}
+
+@media (max-width: 480px) {
+    .expense-form-actions {
+        align-items: stretch;
+        flex-direction: column-reverse;
+    }
+
+    .expense-cancel-link,
+    .expense-submit-button {
+        text-align: center;
+        width: 100%;
+    }
+}

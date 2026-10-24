@@ -1,7 +1,9 @@
 import calendar
+import math
 import os
 import re
 from datetime import date
+from decimal import Decimal, InvalidOperation
 
 from flask import (
     Flask,
@@ -15,7 +17,14 @@ from flask import (
 )
 from werkzeug.security import check_password_hash
 
-from database.db import create_user, get_user_by_email, init_app, init_db, seed_db
+from database.db import (
+    create_expense,
+    create_user,
+    get_user_by_email,
+    init_app,
+    init_db,
+    seed_db,
+)
 from database.queries import (
     get_category_breakdown,
     get_recent_transactions,
@@ -265,9 +274,73 @@ def profile():
     )
 
 
-@app.route("/expenses/add")
+@app.route("/expenses/add", methods=["GET", "POST"])
 def add_expense():
-    return "Add expense — coming in Step 7"
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+
+    categories = [
+        "Food",
+        "Transport",
+        "Bills",
+        "Health",
+        "Entertainment",
+        "Shopping",
+        "Other",
+    ]
+    form_data = {
+        "amount": request.form.get("amount", "").strip(),
+        "category": request.form.get("category", ""),
+        "date": request.form.get("date", date.today().isoformat()),
+        "description": request.form.get("description", "").strip(),
+    }
+
+    if request.method == "POST":
+        error = None
+        try:
+            amount = Decimal(form_data["amount"])
+            if not amount.is_finite() or amount <= 0:
+                error = "Amount must be greater than zero."
+            else:
+                amount_value = float(amount)
+                if not math.isfinite(amount_value) or amount_value <= 0:
+                    error = "Enter a valid amount greater than zero."
+        except InvalidOperation:
+            error = "Enter a valid amount greater than zero."
+
+        try:
+            expense_date = date.fromisoformat(form_data["date"])
+            if expense_date.isoformat() != form_data["date"]:
+                raise ValueError
+        except ValueError:
+            error = "Enter a valid date."
+
+        if form_data["category"] not in categories:
+            error = "Select a valid category."
+
+        if error:
+            flash(error, "error")
+            return render_template(
+                "add_expense.html",
+                categories=categories,
+                form_data=form_data,
+            ), 400
+
+        create_expense(
+            session["user_id"],
+            amount_value,
+            form_data["category"],
+            form_data["description"] or None,
+            expense_date.isoformat(),
+        )
+        flash("Expense added successfully.", "success")
+        return redirect(url_for("profile"))
+
+    return render_template(
+        "add_expense.html",
+        categories=categories,
+        form_data=form_data,
+    )
 
 
 @app.route("/expenses/<int:id>/edit")
