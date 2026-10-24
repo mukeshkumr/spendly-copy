@@ -11,6 +11,19 @@ def _close_connection():
     close_db()
 
 
+def _date_filter(start_date, end_date):
+    """Return parameterized SQL and values for optional inclusive date bounds."""
+    conditions = []
+    parameters = []
+    if start_date is not None:
+        conditions.append("date >= ?")
+        parameters.append(start_date)
+    if end_date is not None:
+        conditions.append("date <= ?")
+        parameters.append(end_date)
+    return "".join(" AND " + condition for condition in conditions), parameters
+
+
 def get_user_by_id(user_id):
     """Return the public profile fields for a user, or None if absent."""
     db = get_db()
@@ -38,9 +51,11 @@ def get_user_by_id(user_id):
         _close_connection()
 
 
-def get_summary_stats(user_id):
+def get_summary_stats(user_id, start_date=None, end_date=None):
     """Return total spending, transaction count, and highest-spend category."""
     db = get_db()
+    date_clause, date_parameters = _date_filter(start_date, end_date)
+    parameters = (user_id, *date_parameters)
     try:
         totals = db.execute(
             """
@@ -48,19 +63,20 @@ def get_summary_stats(user_id):
                    COUNT(*) AS transaction_count
             FROM expenses
             WHERE user_id = ?
-            """,
-            (user_id,),
+            """ + date_clause,
+            parameters,
         ).fetchone()
         top_category = db.execute(
             """
             SELECT category
             FROM expenses
             WHERE user_id = ?
+            """ + date_clause + """
             GROUP BY category
             ORDER BY SUM(amount) DESC, category ASC
             LIMIT 1
             """,
-            (user_id,),
+            parameters,
         ).fetchone()
         return {
             "total_spent": totals["total_spent"],
@@ -71,19 +87,21 @@ def get_summary_stats(user_id):
         _close_connection()
 
 
-def get_recent_transactions(user_id, limit=10):
+def get_recent_transactions(user_id, limit=10, start_date=None, end_date=None):
     """Return a user's latest transactions, with the newest date first."""
     db = get_db()
+    date_clause, date_parameters = _date_filter(start_date, end_date)
     try:
         rows = db.execute(
             """
             SELECT date, description, category, amount
             FROM expenses
             WHERE user_id = ?
+            """ + date_clause + """
             ORDER BY date DESC, created_at DESC, id DESC
             LIMIT ?
             """,
-            (user_id, limit),
+            (user_id, *date_parameters, limit),
         ).fetchall()
         return [
             {
@@ -98,19 +116,21 @@ def get_recent_transactions(user_id, limit=10):
         _close_connection()
 
 
-def get_category_breakdown(user_id):
+def get_category_breakdown(user_id, start_date=None, end_date=None):
     """Return category totals and integer percentages totaling exactly 100."""
     db = get_db()
+    date_clause, date_parameters = _date_filter(start_date, end_date)
     try:
         rows = db.execute(
             """
             SELECT category AS name, SUM(amount) AS amount
             FROM expenses
             WHERE user_id = ?
+            """ + date_clause + """
             GROUP BY category
             ORDER BY amount DESC, name ASC
             """,
-            (user_id,),
+            (user_id, *date_parameters),
         ).fetchall()
         if not rows:
             return []

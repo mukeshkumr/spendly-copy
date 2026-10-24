@@ -1,4 +1,7 @@
+import calendar
 import os
+import re
+from datetime import date
 
 from flask import (
     Flask,
@@ -44,6 +47,73 @@ def inject_navigation_user():
 # ------------------------------------------------------------------ #
 # Routes                                                             #
 # ------------------------------------------------------------------ #
+
+def _subtract_months(value, months):
+    month_index = value.year * 12 + value.month - 1 - months
+    year, month = divmod(month_index, 12)
+    month += 1
+    day = min(value.day, calendar.monthrange(year, month)[1])
+    return date(year, month, day)
+
+
+def _category_css_class(category_name):
+    return re.sub(r"[^a-z0-9]+", "-", category_name.lower()).strip("-")
+
+
+def _profile_date_filter():
+    preset = request.args.get("preset", "").strip()
+    valid_presets = {
+        "all_time",
+        "this_month",
+        "last_3_months",
+        "last_6_months",
+        "custom",
+    }
+    if preset and preset not in valid_presets:
+        abort(400, description="Select a valid date filter.")
+
+    if preset in {"this_month", "last_3_months", "last_6_months"}:
+        today = date.today()
+        if preset == "this_month":
+            start_date = today.replace(day=1)
+            period_label = "This Month"
+        elif preset == "last_3_months":
+            start_date = _subtract_months(today, 3)
+            period_label = "Last 3 Months"
+        else:
+            start_date = _subtract_months(today, 6)
+            period_label = "Last 6 Months"
+        return start_date.isoformat(), today.isoformat(), preset, period_label
+
+    if preset == "all_time":
+        return None, None, "all_time", "All Time"
+
+    start_date = request.args.get("start_date", "").strip() or None
+    end_date = request.args.get("end_date", "").strip() or None
+    for label, date_value in (("Start date", start_date), ("End date", end_date)):
+        if date_value is not None:
+            try:
+                parsed_date = date.fromisoformat(date_value)
+            except ValueError:
+                abort(400, description=f"{label} must be a valid YYYY-MM-DD date.")
+            if parsed_date.isoformat() != date_value:
+                abort(400, description=f"{label} must be a valid YYYY-MM-DD date.")
+
+    if start_date and end_date and start_date > end_date:
+        abort(400, description="Start date must be on or before end date.")
+
+    if start_date and end_date:
+        period_label = f"{start_date} to {end_date}"
+    elif start_date:
+        period_label = f"From {start_date}"
+    elif end_date:
+        period_label = f"Through {end_date}"
+    else:
+        period_label = "All Time"
+
+    selected_preset = "custom" if start_date or end_date else "all_time"
+    return start_date, end_date, selected_preset, period_label
+
 
 @app.route("/")
 def landing():
@@ -130,6 +200,10 @@ def profile():
     if not session.get("user_id"):
         return redirect(url_for("login"))
 
+    start_date, end_date, selected_preset, period_label = (
+        _profile_date_filter()
+    )
+
     user_id = session["user_id"]
     profile_user = get_user_by_id(user_id)
     if profile_user is None:
@@ -138,17 +212,17 @@ def profile():
         part[0] for part in profile_user["name"].split()[:2]
     ).upper()
 
-    stats = get_summary_stats(session["user_id"])
+    stats = get_summary_stats(user_id, start_date, end_date)
     summary_stats = [
         {
             "label": "Total spent",
             "value": f"₹{stats['total_spent']:,.2f}",
-            "detail": "All time",
+            "detail": period_label,
         },
         {
             "label": "Transactions",
             "value": str(stats["transaction_count"]),
-            "detail": "All time",
+            "detail": period_label,
         },
         {
             "label": "Top category",
@@ -157,16 +231,24 @@ def profile():
         },
     ]
 
-    transactions = get_recent_transactions(user_id)
+    transactions = [
+        {
+            **transaction,
+            "class": _category_css_class(transaction["category"]),
+        }
+        for transaction in get_recent_transactions(
+            user_id, start_date=start_date, end_date=end_date
+        )
+    ]
 
     categories = [
         {
             "name": category["name"],
             "amount": f"₹{category['amount']:,.2f}",
             "value": int(category["pct"]),
-            "class": category["name"].lower(),
+            "class": _category_css_class(category["name"]),
         }
-        for category in get_category_breakdown(user_id)
+        for category in get_category_breakdown(user_id, start_date, end_date)
     ]
 
     return render_template(
@@ -176,6 +258,10 @@ def profile():
         transactions=transactions,
         categories=categories,
         category_max=100,
+        selected_start_date=start_date or "",
+        selected_end_date=end_date or "",
+        selected_preset=selected_preset,
+        period_label=period_label,
     )
 
 

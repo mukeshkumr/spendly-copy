@@ -17,6 +17,51 @@
         <a class="profile-logout-link" href="{{ url_for('logout') }}">Sign out</a>
     </header>
 
+    <form class="profile-date-filter" method="get" action="{{ url_for('profile') }}">
+        <div class="profile-date-presets" role="group" aria-label="Choose a date range">
+            {% for preset, label in [
+                ("all_time", "All Time"),
+                ("this_month", "This Month"),
+                ("last_3_months", "Last 3 Months"),
+                ("last_6_months", "Last 6 Months")
+            ] %}
+            <button
+                class="profile-date-preset{% if selected_preset == preset %} is-active{% endif %}"
+                type="submit"
+                name="preset"
+                value="{{ preset }}"
+                aria-pressed="{{ 'true' if selected_preset == preset else 'false' }}"
+            >{{ label }}</button>
+            {% endfor %}
+        </div>
+        <span class="profile-date-divider" aria-hidden="true"></span>
+        <div class="profile-date-range" role="group" aria-label="Custom date range">
+            <input
+                id="start-date"
+                class="profile-date-input"
+                name="start_date"
+                type="date"
+                value="{{ selected_start_date }}"
+                aria-label="Start date"
+            >
+            <span class="profile-date-to" aria-hidden="true">to</span>
+            <input
+                id="end-date"
+                class="profile-date-input"
+                name="end_date"
+                type="date"
+                value="{{ selected_end_date }}"
+                aria-label="End date"
+            >
+        </div>
+        <button
+            class="profile-date-submit"
+            type="submit"
+            name="preset"
+            value="custom"
+        >Apply</button>
+    </form>
+
     <section class="profile-user-card" aria-labelledby="profile-user-name">
         <div class="profile-avatar" aria-hidden="true">{{ profile_user.initials|default(profile_user.name.split()|map('first')|join|upper, true) }}</div>
         <div class="profile-user-details">
@@ -44,7 +89,7 @@
         <section class="profile-panel transactions-panel" aria-labelledby="transactions-heading">
             <div class="profile-panel-heading">
                 <div>
-                    <p class="profile-eyebrow">Latest activity</p>
+                    <p class="profile-eyebrow">{{ period_label }}</p>
                     <h2 id="transactions-heading">Recent transactions</h2>
                 </div>
                 <span class="profile-panel-count">{{ transactions|length }} items</span>
@@ -66,7 +111,7 @@
                             <td class="transaction-date">{{ transaction.date }}</td>
                             <td class="transaction-description">{{ transaction.description }}</td>
                             <td>
-                                <span class="category-badge category-{{ transaction.category|lower }}">
+                                <span class="category-badge category-{{ transaction.class }}">
                                     {{ transaction.category }}
                                 </span>
                             </td>
@@ -81,7 +126,7 @@
         <section class="profile-panel categories-panel" aria-labelledby="categories-heading">
             <div class="profile-panel-heading">
                 <div>
-                    <p class="profile-eyebrow">All time</p>
+                    <p class="profile-eyebrow">{{ period_label }}</p>
                     <h2 id="categories-heading">Spending by category</h2>
                 </div>
             </div>
