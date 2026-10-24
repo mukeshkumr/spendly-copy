@@ -160,6 +160,26 @@ def create_user(name: str, email: str, password: str) -> int | None:
     return cursor.lastrowid
 
 
+def create_expense(
+    user_id: int,
+    amount: float,
+    category: str,
+    description: str | None,
+    expense_date: str,
+) -> int:
+    """Insert an expense and return its new id."""
+    db = get_db()
+    cursor = db.execute(
+        """
+        INSERT INTO expenses (user_id, amount, category, description, date)
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (user_id, amount, category, description, expense_date),
+    )
+    db.commit()
+    return cursor.lastrowid
+
+
 def get_user_by_email(email: str) -> sqlite3.Row | None:
     """Return the user row for the given email, or None."""
     db = get_db()

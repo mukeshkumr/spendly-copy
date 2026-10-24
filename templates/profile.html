@@ -14,7 +14,7 @@
             <h1 class="profile-page-title">Profile overview</h1>
             <p class="profile-page-subtitle">A snapshot of your Spendly account and recent spending.</p>
         </div>
-        <a class="profile-logout-link" href="{{ url_for('logout') }}">Sign out</a>
+        <a class="profile-add-expense-link" href="{{ url_for('add_expense') }}">Add expense</a>
     </header>
 
     <form class="profile-date-filter" method="get" action="{{ url_for('profile') }}">

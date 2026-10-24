@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Add expense — Spendly{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/add_expense.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="expense-form-page">
+    <header class="expense-form-header">
+        <p class="expense-form-eyebrow">Your account</p>
+        <h1>Add an expense</h1>
+        <p>Record a purchase to keep your spending overview up to date.</p>
+    </header>
+
+    <form class="expense-form-card" method="post" action="{{ url_for('add_expense') }}">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="expense-form-messages" role="status" aria-live="polite">
+                    {% for category, message in messages %}
+                    <p class="expense-form-message expense-form-message-{{ category }}">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="expense-form-field">
+            <label for="amount">Amount</label>
+            <div class="expense-amount-input">
+                <span aria-hidden="true">₹</span>
+                <input
+                    id="amount"
+                    name="amount"
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    inputmode="decimal"
+                    value="{{ form_data.amount }}"
+                    required
+                >
+            </div>
+        </div>
+
+        <div class="expense-form-field">
+            <label for="category">Category</label>
+            <select id="category" name="category" required>
+                <option value="" disabled{% if not form_data.category %} selected{% endif %}>Choose a category</option>
+                {% for category in categories %}
+                <option value="{{ category }}"{% if form_data.category == category %} selected{% endif %}>{{ category }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="expense-form-field">
+            <label for="date">Date</label>
+            <input id="date" name="date" type="date" value="{{ form_data.date }}" required>
+        </div>
+
+        <div class="expense-form-field">
+            <label for="description">Description <span>(optional)</span></label>
+            <textarea
+                id="description"
+                name="description"
+                rows="3"
+                maxlength="200"
+                placeholder="What was this expense for?"
+            >{{ form_data.description }}</textarea>
+        </div>
+
+        <div class="expense-form-actions">
+            <a class="expense-cancel-link" href="{{ url_for('profile') }}">Cancel</a>
+            <button class="expense-submit-button" type="submit">Add expense</button>
+        </div>
+    </form>
+</section>
+{% endblock %}
