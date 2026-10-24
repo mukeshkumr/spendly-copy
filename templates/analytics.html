@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics — Coming Soon — Spendly{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/analytics.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="analytics-coming-soon">
+    <div class="analytics-container">
+        <div class="analytics-content">
+            <div class="analytics-badge">Under Development</div>
+            <h1 class="analytics-title">Analytics Coming Soon</h1>
+            <p class="analytics-subtitle">
+                Spendly is building powerful analytics tools to help you understand your spending patterns, track financial goals, and make smarter money decisions.
+            </p>
+
+            <div class="analytics-features">
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Spending Analysis</h3>
+                    <p>Visual breakdowns of your expenses with category trends and spending patterns over time.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Goal Tracking</h3>
+                    <p>Set financial goals and monitor progress toward savings targets and budget milestones.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Smart Insights</h3>
+                    <p>AI-powered recommendations to optimize your spending and identify opportunities to save.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📅</div>
+                    <h3>Custom Reports</h3>
+                    <p>Generate detailed reports for any time period with exportable data for your records.</p>
+                </div>
+            </div>
+
+            <div class="analytics-cta">
+                <p>Want to be notified when analytics launches? <strong>Stay tuned</strong> for the big reveal!</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -275,9 +275,11 @@ def edit_expense(id):
     return "Edit expense — coming in Step 8"
 
 
-@app.route("/expenses/<int:id>/delete")
-def delete_expense(id):
-    return "Delete expense — coming in Step 9"
+@app.route("/analytics")
+def analytics():
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+    return render_template("analytics.html")
 
 
 if __name__ == "__main__":
