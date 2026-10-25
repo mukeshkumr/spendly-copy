@@ -17,6 +17,16 @@
         <a class="profile-add-expense-link" href="{{ url_for('add_expense') }}">Add expense</a>
     </header>
 
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="profile-flash-messages" role="status" aria-live="polite">
+            {% for category, message in messages %}
+            <p class="profile-flash-message profile-flash-message-{{ category }}">{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+
     <form class="profile-date-filter" method="get" action="{{ url_for('profile') }}">
         <div class="profile-date-presets" role="group" aria-label="Choose a date range">
             {% for preset, label in [
@@ -120,7 +130,10 @@
                                 </span>
                             </td>
                             <td class="transaction-amount">₹{{ "{:,.2f}".format(transaction.amount) }}</td>
-                            <td><a href="{{ url_for('edit_expense', id=transaction.id) }}">Edit</a></td>
+                            <td class="transaction-actions">
+                                <a href="{{ url_for('edit_expense', id=transaction.id) }}">Edit</a>
+                                <a class="transaction-delete-link" href="{{ url_for('delete_expense', id=transaction.id) }}">Delete</a>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>

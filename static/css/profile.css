@@ -78,6 +78,18 @@
     outline-offset: 3px;
 }
 
+.profile-flash-messages { margin-bottom: 1rem; }
+.profile-flash-message {
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--paper-card);
+}
+.profile-flash-message-success {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
 .profile-user-card,
 .profile-stat-card,
 .profile-panel,
@@ -298,6 +310,9 @@
 .profile-page .transaction-description { color: var(--ink-soft); font-weight: 500; }
 .profile-page .transactions-table .amount-column,
 .profile-page .transaction-amount { text-align: right; }
+.profile-page .transaction-actions { white-space: nowrap; }
+.profile-page .transaction-actions a + a { margin-left: 0.5rem; }
+.profile-page .transaction-delete-link { color: var(--danger); }
 .profile-page .transaction-amount {
     color: var(--ink);
     font-variant-numeric: tabular-nums;

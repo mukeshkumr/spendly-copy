@@ -122,6 +122,20 @@ def update_expense(expense_id, user_id, amount, category, expense_date, descript
         _close_connection()
 
 
+def delete_expense(expense_id, user_id):
+    """Delete an expense only when it belongs to the given user."""
+    db = get_db()
+    try:
+        cursor = db.execute(
+            "DELETE FROM expenses WHERE id = ? AND user_id = ?",
+            (expense_id, user_id),
+        )
+        db.commit()
+        return cursor.rowcount
+    finally:
+        _close_connection()
+
+
 def get_recent_transactions(user_id, limit=10, start_date=None, end_date=None):
     """Return a user's latest transactions, with the newest date first."""
     db = get_db()

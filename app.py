@@ -27,6 +27,7 @@ from database.db import (
 )
 from database.queries import (
     get_category_breakdown,
+    delete_expense as delete_expense_record,
     get_expense_by_id,
     get_recent_transactions,
     get_summary_stats,
@@ -434,6 +435,26 @@ def edit_expense(id):
         categories=categories,
         form_data=expense_dict,
     )
+
+
+@app.route("/expenses/<int:id>/delete", methods=["GET", "POST"])
+def delete_expense(id):
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+    expense = get_expense_by_id(id, user_id)
+    if expense is None:
+        abort(404)
+
+    if request.method == "POST":
+        deleted_rows = delete_expense_record(id, user_id)
+        if deleted_rows != 1:
+            abort(404)
+        flash("Expense deleted successfully.", "success")
+        return redirect(url_for("profile"))
+
+    return render_template("delete_expense.html", expense=expense)
 
 
 @app.route("/analytics")
