@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Delete expense — Spendly{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/add_expense.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="expense-form-page">
+    <header class="expense-form-header">
+        <p class="expense-form-eyebrow">Your account</p>
+        <h1>Delete expense?</h1>
+        <p>This action cannot be undone. Confirm that you want to remove this expense.</p>
+    </header>
+
+    <div class="expense-form-card">
+        <dl>
+            <dt>Amount</dt>
+            <dd>₹{{ "{:,.2f}".format(expense.amount) }}</dd>
+            <dt>Category</dt>
+            <dd>{{ expense.category }}</dd>
+            <dt>Date</dt>
+            <dd>{{ expense.date }}</dd>
+            {% if expense.description %}
+            <dt>Description</dt>
+            <dd>{{ expense.description }}</dd>
+            {% endif %}
+        </dl>
+
+        <div class="expense-form-actions">
+            <a class="expense-cancel-link" href="{{ url_for('profile') }}">Cancel</a>
+            <form method="post" action="{{ url_for('delete_expense', id=expense.id) }}">
+                <button class="expense-submit-button" type="submit">Delete expense</button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
