@@ -87,6 +87,41 @@ def get_summary_stats(user_id, start_date=None, end_date=None):
         _close_connection()
 
 
+def get_expense_by_id(expense_id, user_id):
+    """Return a single expense for the given user, or None if not found."""
+    db = get_db()
+    try:
+        row = db.execute(
+            """
+            SELECT *
+            FROM expenses
+            WHERE id = ? AND user_id = ?
+            """,
+            (expense_id, user_id),
+        ).fetchone()
+        return row
+    finally:
+        _close_connection()
+
+
+def update_expense(expense_id, user_id, amount, category, expense_date, description):
+    """Update an expense only when it belongs to the authenticated user."""
+    db = get_db()
+    try:
+        cursor = db.execute(
+            """
+            UPDATE expenses
+            SET amount = ?, category = ?, date = ?, description = ?
+            WHERE id = ? AND user_id = ?
+            """,
+            (amount, category, expense_date, description, expense_id, user_id),
+        )
+        db.commit()
+        return cursor.rowcount
+    finally:
+        _close_connection()
+
+
 def get_recent_transactions(user_id, limit=10, start_date=None, end_date=None):
     """Return a user's latest transactions, with the newest date first."""
     db = get_db()
@@ -94,7 +129,7 @@ def get_recent_transactions(user_id, limit=10, start_date=None, end_date=None):
     try:
         rows = db.execute(
             """
-            SELECT date, description, category, amount
+            SELECT id, date, description, category, amount
             FROM expenses
             WHERE user_id = ?
             """ + date_clause + """
@@ -105,6 +140,7 @@ def get_recent_transactions(user_id, limit=10, start_date=None, end_date=None):
         ).fetchall()
         return [
             {
+                "id": row["id"],
                 "date": row["date"],
                 "description": row["description"],
                 "category": row["category"],
