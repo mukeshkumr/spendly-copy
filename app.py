@@ -27,9 +27,11 @@ from database.db import (
 )
 from database.queries import (
     get_category_breakdown,
+    get_expense_by_id,
     get_recent_transactions,
     get_summary_stats,
     get_user_by_id,
+    update_expense,
 )
 
 app = Flask(__name__)
@@ -343,9 +345,95 @@ def add_expense():
     )
 
 
-@app.route("/expenses/<int:id>/edit")
+@app.route("/expenses/<int:id>/edit", methods=["GET", "POST"])
 def edit_expense(id):
-    return "Edit expense — coming in Step 8"
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+
+    categories = [
+        "Food",
+        "Transport",
+        "Bills",
+        "Health",
+        "Entertainment",
+        "Shopping",
+        "Other",
+    ]
+
+    expense = get_expense_by_id(id, session["user_id"])
+    if expense is None:
+        abort(404)
+
+    if request.method == "POST":
+        form_data = {
+            "amount": request.form.get("amount", "").strip(),
+            "category": request.form.get("category", ""),
+            "date": request.form.get("date", "").strip(),
+            "description": request.form.get("description", "").strip(),
+        }
+
+        error = None
+        try:
+            amount = Decimal(form_data["amount"])
+            if not amount.is_finite() or amount <= 0:
+                error = "Amount must be greater than zero."
+            else:
+                amount_value = float(amount)
+                if not math.isfinite(amount_value) or amount_value <= 0:
+                    error = "Enter a valid amount greater than zero."
+        except InvalidOperation:
+            error = "Enter a valid amount greater than zero."
+
+        try:
+            expense_date = date.fromisoformat(form_data["date"])
+            if expense_date.isoformat() != form_data["date"]:
+                raise ValueError
+        except ValueError:
+            error = "Enter a valid date."
+
+        if form_data["category"] not in categories:
+            error = "Select a valid category."
+
+        if error:
+            flash(error, "error")
+            return render_template(
+                "edit_expense.html",
+                expense={
+                    "id": id,
+                    "amount": form_data["amount"],
+                    "category": form_data["category"],
+                    "date": form_data["date"],
+                    "description": form_data["description"],
+                },
+                categories=categories,
+                form_data=form_data,
+            ), 400
+
+        normalized_description = form_data["description"] or None
+        update_expense(
+            id,
+            session["user_id"],
+            float(amount_value),
+            form_data["category"],
+            expense_date.isoformat(),
+            normalized_description,
+        )
+        flash("Expense updated successfully.", "success")
+        return redirect(url_for("profile"))
+
+    expense_dict = {
+        "id": expense["id"],
+        "amount": expense["amount"],
+        "category": expense["category"],
+        "date": expense["date"],
+        "description": expense["description"] or "",
+    }
+    return render_template(
+        "edit_expense.html",
+        expense=expense_dict,
+        categories=categories,
+        form_data=expense_dict,
+    )
 
 
 @app.route("/analytics")
